@@ -1,0 +1,98 @@
+---
+title: "ST558-Project-2"
+author: "Jenna Wilkie"
+date: "10/22/2021"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r cars, include=FALSE}
+library(tidyverse)
+library(caret)
+```
+
+# Reading in Data Set 
+
+To begin, we read in the data set, then created a subset of the data to look at only the news article type that we are interested in.  
+
+
+```{r data_set, message=FALSE}
+online_news_popularity<-read_csv("OnlineNewsPopularity.csv")
+
+#filter for data to select the chanel of interest
+data<-online_news_popularity%>%filter(data_channel_is_bus == 1)
+```
+
+
+# Summarizations
+
+Next we will look at some summary statistics of the data.
+
+## Summary Statistics
+
+To start, we want to take a look at some important summary statistics of the data.  
+
+One thing we are interested in is which day of the week is most common for this type of article.  Below are the summations and average values of the weekday_is_* column for each day.  Since the values in these columns are either 1 or 0, we can use the returned averages to approximate the probability of the article posting on that day of the week.  Then the summations can tell us how often an article is posted on each day.  
+
+```{r weekday}
+mon_avg<-mean(data$weekday_is_monday)
+tue_avg<-mean(data$weekday_is_tuesday)
+wed_avg<-mean(data$weekday_is_wednesday)
+thu_avg<-mean(data$weekday_is_thursday)
+fri_avg<-mean(data$weekday_is_friday)
+sat_avg<-mean(data$weekday_is_saturday)
+sun_avg<-mean(data$weekday_is_sunday)
+
+mon_sum<-sum(data$weekday_is_monday)
+tue_sum<-sum(data$weekday_is_tuesday)
+wed_sum<-sum(data$weekday_is_wednesday)
+thu_sum<-sum(data$weekday_is_thursday)
+fri_sum<-sum(data$weekday_is_friday)
+sat_sum<-sum(data$weekday_is_saturday)
+sun_sum<-sum(data$weekday_is_sunday)
+
+avgs<-data.frame("Avg"=c(mon_avg,tue_avg,wed_avg,thu_avg,fri_avg,sat_avg,sun_avg), "Day"=c("Mon", "Tues", "Wed", "Thur", "Fri", "Sat", "Sun"))
+sums<-data.frame("Value"=c(mon_sum,tue_sum,wed_sum,thu_sum,fri_sum,sat_sum,sun_sum), "Day"=c("Mon", "Tues", "Wed", "Thur", "Fri", "Sat", "Sun"))
+
+avgs
+sums
+```
+
+Another interesting statistic to look at is the average_token_length.  Below are the mean and standard deviation of that column.  The mean can tell us the expected value of the average token length of each article, and the standard deviation can tell us how far the observed values vary from the expected value, on average.  A large standard deviation tells us that the data has a lot of variation.  
+
+```{r token}
+token_avg<-mean(data$average_token_length)
+token_sd<-sd(data$average_token_length)
+
+token_avg
+token_sd
+```
+
+
+
+## Graphs
+
+Returning to the summary statistics involving the day of the week, a better way to view that data may be to look at a graphical representation.  Below is a bar plot with the counts for each day of the week. 
+
+```{r weekday_plot}
+# change the shape of the data for easy graphing.  
+ggplot(data=sums, aes(x=Day, y=Value))+geom_bar(stat="Identity")+labs(x="Day of the Week", y="Number of Articles", title="Article Day of Week")+scale_x_discrete(labels=c("Monday", "Tuesday", "Wednesday","Thursday", "Friday", "Saturday","Sunday"))
+```
+
+Moving on from the days of the week, another interesting observation could involve the global_sentiment_polarity and the global_subjectivity.  It is possible that more subjective articles are more polarizing in nature.  Below is a scatter plot of global_sentiment_polarity vs. global_subjectivity. The correlation between the two variables is included.  When evaluating a correlation, a value that is closer to 1 or negative 1 indicates a stronger correlation.  A positive correlation means that as one variable increases so does the other, and a negative correlation means that as one variable increases, the other decreases.  For example, a correlation of -.77 would be a moderately strong negative correlation.  
+
+```{r global_plot}
+correlation<-cor(data$global_sentiment_polarity, data$global_subjectivity)
+ggplot(data, aes(x=global_sentiment_polarity, y=global_subjectivity))+geom_point()+labs(x="Global Sentiment Polarity", y="Global Subjectivity" ,title="Global Polarity vs. Global Subjectivity")+geom_text(x=-.2, y=.05, size=3 ,label=paste0("Correlation=",round(correlation,2)))
+```
+
+Next we can look at how keywords can affect the number of shares for an article.  The scatter plot below shows the kw_avg_max plotted against self_reference_avg_sharess.  The correlations are included on this plot and can be interpreted in the same was as stated above.  
+
+```{r}
+correlation<-cor(data$self_reference_avg_sharess, data$kw_avg_avg)
+ggplot(data, aes(x=self_reference_avg_sharess, y=kw_avg_avg))+geom_point()+labs(x="Shares", y="Key Word Average" ,title="Global Polarity vs. Global Subjectivity")+geom_text(x=6e+05, y=40000, size=3 ,label=paste0("Correlation=",round(correlation,2)))
+```
