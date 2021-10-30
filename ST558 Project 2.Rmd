@@ -10,12 +10,19 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r cars, include=FALSE}
+```{r, include=FALSE, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(caret)
 library(randomForest)
 library(gbm)
 ```
+
+
+# Intoduction
+
+The data set collected from different articles was published by Mashable (www.mashable.com) with the last two years. We mainly subset six different features: lifestyle, entainment, business, socmed, tech and world to predict the probility of online news popularity.  
+In this project, we use four different methods - two linear models, a random forest and a boosted tree models - to model the response (shares of articles) from different articles on Mashable website and predict the popularity  of online news. 
+
 
 # Reading in Data Set 
 
@@ -117,7 +124,7 @@ set.seed(89)
 train_index<-createDataPartition(data$shares, p=0.7, list=FALSE)
 training<-data[train_index,]
 test<-data[-train_index,]
-```
+```  
 
 Now each of the models will be fitted against the training data set and analyzed through 10 fold cross validation.  
 
@@ -136,7 +143,6 @@ linear_fit_1 <- train(shares~self_reference_avg_sharess+weekday_is_tuesday+weekd
 set.seed(89)
 
 linear_fit_2 <- train(shares~self_reference_avg_sharess+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+global_rate_positive_words:global_rate_negative_words+num_imgs+num_videos, data=data, method = "glm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"))
-
 ```  
 
 
@@ -159,10 +165,11 @@ A boosted tree model was created. Ensemble boosting tree approach can be applied
 ```{r boosted}
 set.seed(89)
 boosted_tree_fit <-
-  train(shares ~ self_reference_avg_sharess+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+global_rate_positive_words:global_rate_negative_words+num_imgs+num_videos, data=training, method = "gbm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"), tuneGrid=expand.grid(n.trees=c(20,50,100,150,200), interaction.depth = c(1,2,3,4), shrinkage = 0.1, n.minobsinnode = 10))
+  train(shares ~ self_reference_avg_sharess+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+global_rate_positive_words:global_rate_negative_words+num_imgs+num_videos, data=training, method = "gbm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"), tuneGrid=expand.grid(n.trees=c(10,20,50,100,200), interaction.depth = c(1,2,3,4), shrinkage = 0.1, n.minobsinnode = 10))
 
 ## prediction of test data set. 
 boost_predict <- predict(boosted_tree_fit, newdata = test)
+confusionMatrix(boost_predict, test$shares)
 plot(boosted_tree_fit)
 
 ```  
