@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r, include=FALSE, message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(caret)
 library(randomForest)
@@ -26,14 +26,14 @@ In this project, we use four different methods - two linear models, a random for
 
 # Reading in Data Set 
 
-To begin, we read in the data set, then created a subset of the data to look at only the news article type that we are interested in.  
-
+To begin, we read in the data set, then created a subset of the data to look at only the news article type that we are interested in.  The "URL" variable was removed because it was not useful to creating a model.  
 
 ```{r data_set, message=FALSE}
 online_news_popularity<-read_csv("OnlineNewsPopularity.csv")
 
 #filter for data to select the chanel of interest
-data<-online_news_popularity%>%filter(data_channel_is_bus == 1)
+data<-online_news_popularity%>%subset(select=-url)%>%filter(data_channel_is_bus == 1)
+
 ```
 
 
@@ -115,7 +115,7 @@ ggplot(data, aes(x=shares, y=kw_avg_avg))+geom_point(color="#F8766D")+labs(x="Sh
 
 Based on the trends above, and common knowledge, we will fit a two linear models, a random forest model, and a boosted tree model for comparison.  
 
-The first step is to split the data into a training and test set using the **caret** package.
+The first step is to split the data into a training and test set using the **caret** package and convert the shares variable to a factor.
 
 ```{r split}
 # set seed for reproduceability
@@ -126,7 +126,7 @@ training<-data[train_index,]
 test<-data[-train_index,]
 ```  
 
-Now each of the models will be fitted against the training data set and analyzed through 10 fold cross validation.  
+Now each of the models will be fitted using the training data set and analyzed through 10 fold cross validation.  The test set will be used for prediction.
 
 ## Linear Regression Models
 
@@ -135,14 +135,19 @@ A linear regression model allows us to predict the response of a variable of int
 ```{r lrm}
 set.seed(89)
 
-linear_fit_1 <- train(shares~self_reference_avg_sharess+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+global_rate_positive_words:global_rate_negative_words+num_imgs+num_videos, data=data, method = "lm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"))
+linear_fit_1 <- train(shares~weekday_is_monday+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+weekday_is_friday+global_rate_positive_words:global_rate_negative_words+num_imgs+num_keywords+n_unique_tokens, data=training, method = "lm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"))
+
+linear_fit_1
 
 ```  
+
 
 ```{r multiple linear model}
 set.seed(89)
 
-linear_fit_2 <- train(shares~self_reference_avg_sharess+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+global_rate_positive_words:global_rate_negative_words+num_imgs+num_videos, data=data, method = "glm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"))
+linear_fit_2 <- train(shares~self_reference_avg_sharess+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+global_rate_positive_words:global_rate_negative_words+num_imgs+num_videos, data=training, method = "lm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"))
+
+linear_fit_2
 ```  
 
 
@@ -150,12 +155,13 @@ linear_fit_2 <- train(shares~self_reference_avg_sharess+weekday_is_tuesday+weekd
 
 ### Random Forest Model
 
-A random forest model creates multiple trees from bootstrap analysis then averages the results.  Random forest models randomly select a subset of predictors for averaging, so the results won't be affected by one or two very strong predictors.  
+A random forest model creates multiple trees from bootstrap analysis then averages the results.  Random forest models randomly select a subset of predictors for averaging, so the results won't be affected by one or two very strong predictors.  Below is a random forest model fitted from the data.  The model includes the all predictors except for data channel, which cannot be used to predict the response as the data is filtered for the channel.  
 
 ```{r rf}
 set.seed(89)
-random_forest_fit <- train(shares~self_reference_avg_sharess+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+global_rate_positive_words:global_rate_negative_words+num_imgs+num_videos, data=data, method = "rf", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"), tuneGrid=data.frame(mtry=length(data)/3))
+random_forest_fit <- train(shares~.-data_channel_is_lifestyle-data_channel_is_entertainment-data_channel_is_bus-data_channel_is_socmed-data_channel_is_tech-data_channel_is_world, data=training, method = "rf", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"), tuneGrid=data.frame(mtry=(1:10)))
 
+random_forest_fit
 ```  
 
 ### Boosted Tree Model 
@@ -167,10 +173,23 @@ set.seed(89)
 boosted_tree_fit <-
   train(shares ~ self_reference_avg_sharess+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+global_rate_positive_words:global_rate_negative_words+num_imgs+num_videos, data=training, method = "gbm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"), tuneGrid=expand.grid(n.trees=c(10,20,50,100,200), interaction.depth = c(1,2,3,4), shrinkage = 0.1, n.minobsinnode = 10))
 
-## prediction of test data set. 
-boost_predict <- predict(boosted_tree_fit, newdata = test)
-confusionMatrix(boost_predict, test$shares)
-plot(boosted_tree_fit)
+boosted_tree_fit
 
 ```  
 
+
+# Compairson
+
+Now that all of the models are created and chosen using cross validation, we can use the **predict** function on the test set to find the best predictor from our chosen models.   
+
+```{r comparisons}
+set.seed(89)
+pred_linear_1<-predict(linear_fit_1, test)
+pred_linear_2<-predict(linear_fit_2, test)
+pred_random_fit<-predict(random_forest_fit, test)
+pred_boosted_fit<-predict(boosted_tree_fit, test)
+postResample(pred_linear_1,test$shares)
+postResample(pred_linear_2,test$shares)
+postResample(random_forest_fit,test$shares)
+postResample(boosted_tree_fit,test$shares)
+```
