@@ -130,7 +130,14 @@ set.seed(89)
 
 linear_fit_1 <- train(shares~self_reference_avg_sharess+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+global_rate_positive_words:global_rate_negative_words+num_imgs+num_videos, data=data, method = "lm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"))
 
-```
+```  
+
+```{r multiple linear model}
+set.seed(89)
+
+linear_fit_2 <- train(shares~self_reference_avg_sharess+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+global_rate_positive_words:global_rate_negative_words+num_imgs+num_videos, data=data, method = "glm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"))
+
+```  
 
 
 ## Ensemble Models
@@ -143,5 +150,20 @@ A random forest model creates multiple trees from bootstrap analysis then averag
 set.seed(89)
 random_forest_fit <- train(shares~self_reference_avg_sharess+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+global_rate_positive_words:global_rate_negative_words+num_imgs+num_videos, data=data, method = "rf", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"), tuneGrid=data.frame(mtry=length(data)/3))
 
+```  
 
-```
+### Boosted Tree Model 
+
+A boosted tree model was created. Ensemble boosting tree approach can be applied to make trees grown sequentially, each subsequent tree grown on a modified version of original data (slow fitting because of shrinkage), and predictions updated as trees grown. Because the tree grown was shrink for slow fitting, so the appropriate interpretation of trees was lost. 
+
+```{r boosted}
+set.seed(89)
+boosted_tree_fit <-
+  train(shares ~ self_reference_avg_sharess+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+global_rate_positive_words:global_rate_negative_words+num_imgs+num_videos, data=training, method = "gbm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"), tuneGrid=expand.grid(n.trees=c(20,50,100,150,200), interaction.depth = c(1,2,3,4), shrinkage = 0.1, n.minobsinnode = 10))
+
+## prediction of test data set. 
+boost_predict <- predict(boosted_tree_fit, newdata = test)
+plot(boosted_tree_fit)
+
+```  
+
