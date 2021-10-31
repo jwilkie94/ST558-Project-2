@@ -143,7 +143,7 @@ correlation<-cor(data$global_sentiment_polarity, data$shares)
 ggplot(data, aes(x=global_sentiment_polarity, y=shares))+geom_point(color="pink")+labs(x="Global Sentiment Polarity", y="Shares" ,title="Global Polarity vs. Shares")+geom_text(x=0.5, y=6e+05, size=4 ,label=paste0("Correlation=",round(correlation,2)))
 ```
 
-We can also look at how keywords can affect the number of shares for an article.  The scatter plot below shows the kw_avg_avg plotted against shares.  The correlations that are included on this plot and can be interpreted in the same way as stated above.  
+We can also look at how keywords can affect the number of shares for an article.  The scatter plot below shows the kw_avg_avg plotted against shares.  The correlations that are included on this plot and can be interpreted in the same way as stated above.  If the absolute value of the correlation is close to 1, there is a strong linear association between the variables. 
 
 ```{r}
 correlation<-cor(data$shares, data$kw_avg_avg)
@@ -265,7 +265,7 @@ boosted_tree_fit
 
 # Compairson
 
-Now that all of the models are created and chosen using cross validation, we can use the **predict** function on the test set to find the best predictor from our chosen models and the.   
+Now that all of the models are created and chosen using cross validation, we can use the **predict** function on the test set to find the best predictor from our chosen models on the test set.   
 
 ```{r comparisons}
 set.seed(89)
