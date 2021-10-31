@@ -3,11 +3,11 @@ title: "ST558-Project-2"
 author: "Jenna Wilkie"
 date: "10/22/2021"
 output: github_document
----  
- 
+---
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```  
+```
 
 
 ```{r message=FALSE, warning=FALSE}
@@ -15,14 +15,13 @@ library(tidyverse)
 library(caret)
 library(randomForest)
 library(gbm)
-```  
+```
 
 
 # Intoduction
 
 The data set collected from different articles was published by Mashable (www.mashable.com) with the last two years. We mainly subset six different channels: lifestyle, entainment, business, socmed, tech and world to predict the probability of online news popularity.  
 In this project, we summarized and plot some parameters (predictors) against shares (response). Furthermore, we use four different methods - two linear models, a random forest and a boosted tree models - to model the response (shares of articles) from different articles on Mashable website and predict the popularity  of online news. 
-
 
 # Reading in Data Set 
 
@@ -34,7 +33,7 @@ online_news_popularity<-read_csv("OnlineNewsPopularity.csv")
 #filter for data to select the chanel of interest
 data<-online_news_popularity%>%subset(select=-url)%>%filter(data_channel_is_bus == 1)
 
-```  
+```
 
 
 # Summarizations
@@ -54,7 +53,7 @@ shares_sd<-sd(data$shares)
 
 shares_avg
 shares_sd
-```  
+```
 
 Another thing we are interested in is which day of the week has the most shares for this type of article and how many shares occur in total for each day of the week. The averages will give us the expected number of shares for each day, and the summation will give us a total count of the number of shares that have occured overall.  
 
@@ -82,8 +81,7 @@ sums<-data.frame("Value"=c(sum(mon_sum$shares),sum(tue_sum$shares),sum(wed_sum$s
 
 avgs
 sums
-```  
-
+```
 
 We are interested in the impact of global rate positive words and global rate negative words on shares. Also, we compared with rate positive words and negative words.
 
@@ -128,6 +126,7 @@ var_num_videos
 ```  
 
 
+
 ## Graphs
 
 We want to see if there is any relation between the number of shares and the day of the week.  A good way to view that data may be to look at a graphical representation.  Below is a bar plot with the average counts for each day of the week.  A solid red bar indicates the total average number of shares without accounting for date..  
@@ -135,8 +134,7 @@ We want to see if there is any relation between the number of shares and the day
 ```{r weekday_plot}
 # change the shape of the data for easy graphing.  
 ggplot(data=avgs, aes(x=Day, y=Avg))+geom_bar(stat="Identity", fill="light blue")+geom_abline(aes(intercept=shares_avg,slope=0), color="red")+labs(x="Day of the Week", y="Number of Shares", title="Article Day of Week")+scale_x_discrete(labels=c("Monday", "Tuesday", "Wednesday","Thursday", "Friday", "Saturday","Sunday"))
-
-```  
+```
 
 Moving on from the days of the week, another interesting observation regarding the number of shares could involve the global_sentiment_polarity.  It is possible that more or less polarizing articles could show a difference in share rate. Below is a scatter plot of global_sentiment_polarity vs. shares. The correlation between the two variables in each plot is included.  When evaluating a correlation, a value that is closer to 1 or negative 1 indicates a stronger correlation.  A positive correlation means that as one variable increases so does the other, and a negative correlation means that as one variable increases, the other decreases.  For example, a correlation of -.77 would be a moderately strong negative correlation.  
 
@@ -145,13 +143,12 @@ correlation<-cor(data$global_sentiment_polarity, data$shares)
 ggplot(data, aes(x=global_sentiment_polarity, y=shares))+geom_point(color="pink")+labs(x="Global Sentiment Polarity", y="Shares" ,title="Global Polarity vs. Shares")+geom_text(x=0.5, y=6e+05, size=4 ,label=paste0("Correlation=",round(correlation,2)))
 ```
 
-Next we can look at how keywords can affect the number of shares for an article.  The scatter plot below shows the kw_avg_avg plotted against shares.  The correlations are included on this plot and can be interpreted in the same way as stated above.  
+Next we can look at how keywords can affect the number of shares for an article.  The scatter plot below shows the kw_avg_avg plotted against shares.  The correlations that are included on this plot and can be interpreted in the same way as stated above.  
 
 ```{r}
 correlation<-cor(data$shares, data$kw_avg_avg)
 ggplot(data, aes(x=shares, y=kw_avg_avg))+geom_point(color="#F8766D")+labs(x="Shares", y="Key Word Average" ,title="Key Word Average vs. Shares")+geom_text(x=6e+05, y=40000, size=3 ,label=paste0("Correlation=",round(correlation,2)))
-```  
-
+``` 
 
 
 We think the global rate positive words and negative words would have some impact on shares. So we plot scatter plots. The correlation between global rate positive words and negative words and shares is 0.016 and 0.0086, which means the global rate positive and negative words barely have influence on people's sharing an article.  
@@ -198,6 +195,7 @@ ggplot(data, aes(x=num_videos, y=shares))+geom_point(color="purple")+labs(x="num
 ```  
 
 
+
 # Modeling
 
 Based on the trends above, and common knowledge, we will fit a two linear models, a random forest model, and a boosted tree model for comparison.  
@@ -222,7 +220,7 @@ A linear regression model allows us to predict the response of a variable of int
 ```{r lrm}
 set.seed(89)
 
-linear_fit_1 <- train(shares~weekday_is_monday+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+weekday_is_friday+global_rate_positive_words:global_rate_negative_words+num_imgs+num_keywords+n_unique_tokens, data=training, method = "lm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"))
+linear_fit_1 <- train(shares~self_reference_avg_sharess+abs_title_sentiment_polarity+abs_title_subjectivity+avg_positive_polarity+avg_negative_polarity+is_weekend+rate_positive_words+rate_negative_words, data=training, method = "lm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"))
 
 linear_fit_1
 
@@ -242,11 +240,11 @@ linear_fit_2
 
 ### Random Forest Model
 
-A random forest model creates multiple trees from bootstrap analysis then averages the results.  Random forest models randomly select a subset of predictors for averaging, so the results won't be affected by one or two very strong predictors.  Below is a random forest model fitted from the data.  The model includes the all predictors except for data channel, which cannot be used to predict the response as the data is filtered for the channel.  
+A random forest model creates multiple trees from bootstrap analysis then averages the results.  Random forest models randomly select a subset of predictors for averaging, so the results won't be affected by one or two very strong predictors.  Below is a random forest model fitted from the data.  The model self reference shares, absolute title sentiment polarity, absolute title subjectivity, average positive polarity, average negative polarity, rate positive words, and rate negative words as predictors.  
 
 ```{r rf}
 set.seed(89)
-random_forest_fit <- train(shares~.-data_channel_is_lifestyle-data_channel_is_entertainment-data_channel_is_bus-data_channel_is_socmed-data_channel_is_tech-data_channel_is_world, data=training, method = "rf", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"), tuneGrid=data.frame(mtry=(1:10)))
+random_forest_fit <- train(shares~self_reference_avg_sharess+abs_title_sentiment_polarity+abs_title_subjectivity+avg_positive_polarity+avg_negative_polarity+is_weekend+rate_positive_words+rate_negative_words, data=training, method = "rf", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"), tuneGrid=data.frame(mtry=(1:8)))
 
 random_forest_fit
 ```  
@@ -275,8 +273,30 @@ pred_linear_1<-predict(linear_fit_1, test)
 pred_linear_2<-predict(linear_fit_2, test)
 pred_random_fit<-predict(random_forest_fit, test)
 pred_boosted_fit<-predict(boosted_tree_fit, test)
-postResample(pred_linear_1,test$shares)
-postResample(pred_linear_2,test$shares)
-postResample(random_forest_fit,test$shares)
-postResample(boosted_tree_fit,test$shares)
+linear_1<-postResample(pred_linear_1,test$shares)
+linear_2<-postResample(pred_linear_2,test$shares)
+random_fit<-postResample(random_forest_fit$bestTune,test$shares)
+boosted_fit<-postResample(boosted_tree_fit$bestTune,test$shares)
+
+results<-data.frame("Model"=c("Linear Model 1", "Linear Model 2", "Random Forest Model", "Boosted Tree Model"),"RMSE"=c(linear_1[1],linear_2[1],random_fit[1],boosted_fit[1]))
+
+```
+
+```{r best_model}
+#Find the minimum RMSE value
+min_rmse<-min(results$RMSE)
+
+#use a for loop to find the index of the minimum rmse value and use that index to return the linear model associated with that rmse.
+for(i in 1:4){
+  if (results[i,2]==min_rmse){
+  model<-results[i,1]
+  }
+}
+```
+
+```{r result}
+
+#paste the automated result
+
+paste0("The best predictor model of the ones we've created was selected by choosing the model with the lowest RMSE value.  For this data subset, the best model is ", model,".")
 ```
