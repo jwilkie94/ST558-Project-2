@@ -32,8 +32,7 @@ To begin, we read in the data set, then created a subset of the data to look at 
 online_news_popularity<-read_csv("OnlineNewsPopularity.csv")
 
 #filter for data to select the chanel of interest
-data<-online_news_popularity%>%subset(select=-url)%>%filter(data_channel_is_bus == 1)
-
+data<-online_news_popularity%>%subset(select=-url)
 ```
 
 
@@ -180,7 +179,7 @@ boosted_tree_fit
 
 # Compairson
 
-Now that all of the models are created and chosen using cross validation, we can use the **predict** function on the test set to find the best predictor from our chosen models.   
+Now that all of the models are created and chosen using cross validation, we can use the **predict** function on the test set to find the best predictor from our chosen models and the.   
 
 ```{r comparisons}
 set.seed(89)
@@ -215,3 +214,4 @@ for(i in 1:4){
 
 paste0("The best predictor model of the ones we've created was selected by choosing the model with the lowest RMSE value.  For this data subset, the best model is ", model,".")
 ```
+
