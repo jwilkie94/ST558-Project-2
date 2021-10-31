@@ -1,11 +1,11 @@
 # Libraries
 
-The libraries used for this project were: 
-*tidyverse*: A package useful for data manipulation.  Installation of the *tidyverse* package also includes the *readr*, *tidyr*, *dplyr*, and *tibble* pakages.    
-*caret*: A package useful for easily performing k-fold cross validation of test sets.
-*randomForest*: A package that allows us to fit a random forest model.
-*gbm*: A package that allows us to fit the boosted tree model.
-*doParallel*: A package that allows us to use parallel computing for the random forest model to reduce the time it takes our code to run.  
+The libraries used for this project were:   
+**tidyverse**: A package useful for data manipulation.  Installation of the **tidyverse** package also includes the **readr**, **tidyr**, **dplyr**, and **tibble** pakages.      
+**caret**: A package useful for easily performing k-fold cross validation of test sets.  
+**randomForest**: A package that allows us to fit a random forest model.  
+**gbm**: A package that allows us to fit the boosted tree model.  
+**doParallel**: A package that allows us to use parallel computing for the random forest model to reduce the time it takes our code to run.    
 
 # Repo Description
 
@@ -25,12 +25,12 @@ apply(reports,MARGIN=1, FUN=function(x){render(input="ST558 Project 2.Rmd",outpu
 
 
 # Links
-The links for every analysis are as below:
-The analysis for [Business articles is available here](bus.html).
-The analysis for [Entertainment articles is available here](entertainment.html)
-The analysis for [Tech articles is available here](tech.html).
-The analysis for [World articles is available here](world.html)
-The analysis for [Socmed articles is available here](socmed.html)
+The links for every analysis are as below:  
+The analysis for [Business articles is available here](bus.html).  
+The analysis for [Entertainment articles is available here](entertainment.html).  
+The analysis for [Tech articles is available here](tech.html).  
+The analysis for [World articles is available here](world.html).  
+The analysis for [Socmed articles is available here](socmed.html).  
 
 
 
