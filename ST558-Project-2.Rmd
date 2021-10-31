@@ -32,6 +32,14 @@ online_news_popularity<-read_csv("OnlineNewsPopularity.csv")
 
 #filter for data to select the chanel of interest
 data<-online_news_popularity%>%subset(select=-url)
+data <- data %>%
+  mutate(channel= if_else(data_channel_is_bus == 1,"bus",
+                          if_else(data_channel_is_lifestyle == 1, "lifestyle",
+                          if_else(data_channel_is_entertainment == 1, "entertainment",
+                          if_else(data_channel_is_tech == 1, "tech",
+                          if_else(data_channel_is_world == 1, "world", "socmed"))))))
+
+data<-data%>%filter(channel=="bus")
 
 ```
 
@@ -143,7 +151,7 @@ correlation<-cor(data$global_sentiment_polarity, data$shares)
 ggplot(data, aes(x=global_sentiment_polarity, y=shares))+geom_point(color="pink")+labs(x="Global Sentiment Polarity", y="Shares" ,title="Global Polarity vs. Shares")+geom_text(x=0.5, y=6e+05, size=4 ,label=paste0("Correlation=",round(correlation,2)))
 ```
 
-We can also look at how keywords can affect the number of shares for an article.  The scatter plot below shows the kw_avg_avg plotted against shares.  The correlations that are included on this plot and can be interpreted in the same way as stated above.  
+We can also look at how keywords can affect the number of shares for an article.  The scatter plot below shows the kw_avg_avg plotted against shares.  The correlations that are included on this plot and can be interpreted in the same way as stated above.  If the absolute value of the correlation is close to 1, there is a strong linear association between the variables. 
 
 ```{r}
 correlation<-cor(data$shares, data$kw_avg_avg)
@@ -265,7 +273,7 @@ boosted_tree_fit
 
 # Compairson
 
-Now that all of the models are created and chosen using cross validation, we can use the **predict** function on the test set to find the best predictor from our chosen models and the.   
+Now that all of the models are created and chosen using cross validation, we can use the **predict** function on the test set to find the best predictor from our chosen models on the test set.   
 
 ```{r comparisons}
 set.seed(89)
@@ -301,12 +309,5 @@ for(i in 1:4){
 paste0("The best predictor model of the ones we've created was selected by choosing the model with the lowest RMSE value.  For this data subset, the best model is ", model,".")
 ```
 
-data <- data %>%
-  mutate(channel= if_else(data_channel_is_bus == 1,"bus",
-                          if_else(data_channel_is_lifestyle == 1, "lifestyle",
-                          if_else(data_channel_is_entertainment == 1, "entertainment",
-                          if_else(data_channel_is_tech == 1, "tech",
-                          if_else(data_channel_is_world == 1, "world", "socmed"))))))
 
-data<-data%>%filter(channel=="bus")
 
