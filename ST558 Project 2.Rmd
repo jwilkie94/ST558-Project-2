@@ -104,7 +104,7 @@ correlation<-cor(data$global_sentiment_polarity, data$shares)
 ggplot(data, aes(x=global_sentiment_polarity, y=shares))+geom_point(color="pink")+labs(x="Global Sentiment Polarity", y="Shares" ,title="Global Polarity vs. Shares")+geom_text(x=0.5, y=6e+05, size=4 ,label=paste0("Correlation=",round(correlation,2)))
 ```
 
-Next we can look at how keywords can affect the number of shares for an article.  The scatter plot below shows the kw_avg_avg plotted against shares.  The correlations are included on this plot and can be interpreted in the same way as stated above.  
+Next we can look at how keywords can affect the number of shares for an article.  The scatter plot below shows the kw_avg_avg plotted against shares.  The correlations that are included on this plot and can be interpreted in the same way as stated above.  
 
 ```{r}
 correlation<-cor(data$shares, data$kw_avg_avg)
@@ -135,7 +135,7 @@ A linear regression model allows us to predict the response of a variable of int
 ```{r lrm}
 set.seed(89)
 
-linear_fit_1 <- train(shares~weekday_is_monday+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+weekday_is_friday+global_rate_positive_words:global_rate_negative_words+num_imgs+num_keywords+n_unique_tokens, data=training, method = "lm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"))
+linear_fit_1 <- train(shares~self_reference_avg_sharess+abs_title_sentiment_polarity+abs_title_subjectivity+avg_positive_polarity+avg_negative_polarity+is_weekend+rate_positive_words+rate_negative_words, data=training, method = "lm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"))
 
 linear_fit_1
 
@@ -155,11 +155,11 @@ linear_fit_2
 
 ### Random Forest Model
 
-A random forest model creates multiple trees from bootstrap analysis then averages the results.  Random forest models randomly select a subset of predictors for averaging, so the results won't be affected by one or two very strong predictors.  Below is a random forest model fitted from the data.  The model includes the all predictors except for data channel, which cannot be used to predict the response as the data is filtered for the channel.  
+A random forest model creates multiple trees from bootstrap analysis then averages the results.  Random forest models randomly select a subset of predictors for averaging, so the results won't be affected by one or two very strong predictors.  Below is a random forest model fitted from the data.  The model self reference shares, absolute title sentiment polarity, absolute title subjectivity, average positive polarity, average negative polarity, rate positive words, and rate negative words as predictors.  
 
 ```{r rf}
 set.seed(89)
-random_forest_fit <- train(shares~.-data_channel_is_lifestyle-data_channel_is_entertainment-data_channel_is_bus-data_channel_is_socmed-data_channel_is_tech-data_channel_is_world, data=training, method = "rf", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"), tuneGrid=data.frame(mtry=(1:10)))
+random_forest_fit <- train(shares~self_reference_avg_sharess+abs_title_sentiment_polarity+abs_title_subjectivity+avg_positive_polarity+avg_negative_polarity+is_weekend+rate_positive_words+rate_negative_words, data=training, method = "rf", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"), tuneGrid=data.frame(mtry=(1:8)))
 
 random_forest_fit
 ```  
@@ -188,8 +188,30 @@ pred_linear_1<-predict(linear_fit_1, test)
 pred_linear_2<-predict(linear_fit_2, test)
 pred_random_fit<-predict(random_forest_fit, test)
 pred_boosted_fit<-predict(boosted_tree_fit, test)
-postResample(pred_linear_1,test$shares)
-postResample(pred_linear_2,test$shares)
-postResample(random_forest_fit,test$shares)
-postResample(boosted_tree_fit,test$shares)
+linear_1<-postResample(pred_linear_1,test$shares)
+linear_2<-postResample(pred_linear_2,test$shares)
+random_fit<-postResample(random_forest_fit$bestTune,test$shares)
+boosted_fit<-postResample(boosted_tree_fit$bestTune,test$shares)
+
+results<-data.frame("Model"=c("Linear Model 1", "Linear Model 2", "Random Forest Model", "Boosted Tree Model"),"RMSE"=c(linear_1[1],linear_2[1],random_fit[1],boosted_fit[1]))
+
+```
+
+```{r best_model}
+#Find the minimum RMSE value
+min_rmse<-min(results$RMSE)
+
+#use a for loop to find the index of the minimum rmse value and use that index to return the linear model associated with that rmse.
+for(i in 1:4){
+  if (results[i,2]==min_rmse){
+  model<-results[i,1]
+  }
+}
+```
+
+```{r result}
+
+#paste the automated result
+
+paste0("The best predictor model of the ones we've created was selected by choosing the model with the lowest RMSE value.  For this data subset, the best model is ", model,".")
 ```
