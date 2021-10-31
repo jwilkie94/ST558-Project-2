@@ -41,7 +41,9 @@ data <- data %>%
 ```
 
 ```{r filter}
-data<-filter(data,channel==params[[2]])
+topics<-params$topics
+
+data<-filter(data,channel==params$channel)
 ```
 # Summarizations
 
@@ -235,7 +237,7 @@ training<-data[train_index,]
 test<-data[-train_index,]
 ```  
 
-Now each of the models will be fitted using the training data set and analyzed through 10 fold cross validation.  The test set will be used for prediction.
+Now each of the models will be fitted using the training data set and analyzed through 5 fold cross validation.  The test set will be used for prediction.
 
 ## Linear Regression Models
 
@@ -244,7 +246,7 @@ A linear regression model allows us to predict the response of a variable of int
 ```{r lrm}
 set.seed(89)
 
-linear_fit_1 <- train(shares~self_reference_avg_sharess+abs_title_sentiment_polarity+abs_title_subjectivity+avg_positive_polarity+avg_negative_polarity+is_weekend+rate_positive_words+rate_negative_words, data=training, method = "lm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"))
+linear_fit_1 <- train(shares~self_reference_avg_sharess+abs_title_sentiment_polarity+abs_title_subjectivity+avg_positive_polarity+avg_negative_polarity+is_weekend+rate_positive_words+rate_negative_words, data=training, method = "lm", trControl=trainControl(method="cv", number=5),preProcess = c("center", "scale"))
 
 linear_fit_1
 
@@ -254,7 +256,7 @@ linear_fit_1
 ```{r multiple linear model}
 set.seed(89)
 
-linear_fit_2 <- train(shares~global_rate_negative_words+num_imgs+ global_rate_negative_words:num_imgs+I(global_rate_negative_words^2)+I(num_imgs^2), data=training, method = "lm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"))
+linear_fit_2 <- train(shares~global_rate_negative_words+num_imgs+ global_rate_negative_words:num_imgs+I(global_rate_negative_words^2)+I(num_imgs^2), data=training, method = "lm", trControl=trainControl(method="cv", number=5),preProcess = c("center", "scale"))
 
 linear_fit_2
 ```  
@@ -269,14 +271,13 @@ A random forest model creates multiple trees from bootstrap analysis then averag
 ```{r rf}
 set.seed(89)
 
-#use parallel computing to speed up process
-library(doParallel)
-cl <- makePSOCKcluster(10)
+#use parallel computing to speed up process on four cores
+cl <- makePSOCKcluster(4)
 registerDoParallel(cl)
 
-random_forest_fit <- train(shares~self_reference_avg_sharess+abs_title_sentiment_polarity+abs_title_subjectivity+avg_positive_polarity+avg_negative_polarity+is_weekend+rate_positive_words+rate_negative_words, data=training, method = "rf", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"), tuneGrid=data.frame(mtry=(1:8)))
+random_forest_fit <- train(shares~self_reference_avg_sharess+abs_title_sentiment_polarity+abs_title_subjectivity+avg_positive_polarity+avg_negative_polarity+is_weekend+rate_positive_words+rate_negative_words, data=training, method = "rf", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"), tuneGrid=data.frame(mtry=(1:6)))
 
-stopCluster(cl)
+
 random_forest_fit
 ```  
 
@@ -286,8 +287,12 @@ A boosted tree model was created. Ensemble boosting tree approach can be applied
 
 ```{r boosted}
 set.seed(89)
+#create cores for parallel computing
+cl <- makePSOCKcluster(4)
+registerDoParallel(cl)
+
 boosted_tree_fit <-
-  train(shares ~ self_reference_avg_sharess+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+weekday_is_friday+global_rate_positive_words+global_rate_negative_words+num_imgs+num_videos, data=training, method = "gbm", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"), tuneGrid=expand.grid(n.trees=c(10,20,50,100,200), interaction.depth = c(1,2,3,4), shrinkage = 0.1, n.minobsinnode = 10))
+  train(shares ~ self_reference_avg_sharess+weekday_is_tuesday+weekday_is_wednesday+weekday_is_thursday+weekday_is_friday+global_rate_positive_words+global_rate_negative_words+num_imgs+num_videos, data=training, method = "gbm", trControl=trainControl(method="cv", number=5),preProcess = c("center", "scale"), tuneGrid=expand.grid(n.trees=c(10,20,50,100,200), interaction.depth = c(1,2,3,4), shrinkage = 0.1, n.minobsinnode = 10))
 
 boosted_tree_fit
 
