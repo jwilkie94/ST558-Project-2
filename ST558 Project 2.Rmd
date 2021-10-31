@@ -40,7 +40,9 @@ data <- data %>%
                           if_else(data_channel_is_world == 1, "world", "socmed"))))))
 ```
 
-
+```{r filter}
+data<-filter(data,channel==params[[2]])
+```
 # Summarizations
 
 Next we will look at some summary statistics of the data.
