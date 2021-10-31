@@ -5,6 +5,7 @@ The libraries used for this project were:
 *caret*: A package useful for easily performing k-fold cross validation of test sets.
 *randomForest*: A package that allows us to fit a random forest model.
 *gbm*: A package that allows us to fit the boosted tree model.
+*doParallel*: A package that allows us to use parallel computing for the random forest model to reduce the time it takes our code to run.  
 
 # Repo Description
 

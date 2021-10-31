@@ -6,7 +6,7 @@ output: github_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, cache=TRUE)
 ```
 
 
@@ -15,6 +15,7 @@ library(tidyverse)
 library(caret)
 library(randomForest)
 library(gbm)
+library(doParallel)
 ```
 
 
@@ -25,22 +26,18 @@ In this project, we summarized and plot some parameters (predictors) against sha
 
 # Reading in Data Set 
 
-To begin, we read in the data set, then created a subset of the data to look at only the news article type that we are interested in.  The "URL" variable was removed because it was not useful to creating a model. A variable named "channel" was added to allow us to automate R markdown documents based on article type.   
+To begin, we read in the data set, then created a subset of the data to look at only the news article type that we are interested in.  A variable named "channel" was added to allow us to automate R markdown documents based on article type.   
 
 ```{r data_set, message=FALSE}
-online_news_popularity<-read_csv("OnlineNewsPopularity.csv")
+data<-online_news_popularity<-read_csv("OnlineNewsPopularity.csv")
 
-#filter for data to select the chanel of interest
-data<-online_news_popularity%>%subset(select=-url)
+#create new variable for channel then filter for data to select the chanel of interest
 data <- data %>%
   mutate(channel= if_else(data_channel_is_bus == 1,"bus",
                           if_else(data_channel_is_lifestyle == 1, "lifestyle",
                           if_else(data_channel_is_entertainment == 1, "entertainment",
                           if_else(data_channel_is_tech == 1, "tech",
                           if_else(data_channel_is_world == 1, "world", "socmed"))))))
-
-data<-data%>%filter(channel=="bus")
-
 ```
 
 
@@ -269,8 +266,15 @@ A random forest model creates multiple trees from bootstrap analysis then averag
 
 ```{r rf}
 set.seed(89)
+
+#use parallel computing to speed up process
+library(doParallel)
+cl <- makePSOCKcluster(10)
+registerDoParallel(cl)
+
 random_forest_fit <- train(shares~self_reference_avg_sharess+abs_title_sentiment_polarity+abs_title_subjectivity+avg_positive_polarity+avg_negative_polarity+is_weekend+rate_positive_words+rate_negative_words, data=training, method = "rf", trControl=trainControl(method="cv", number=10),preProcess = c("center", "scale"), tuneGrid=data.frame(mtry=(1:8)))
 
+stopCluster(cl)
 random_forest_fit
 ```  
 
@@ -323,7 +327,7 @@ for(i in 1:4){
 
 #paste the automated result
 
-paste0("The best predictor model of the ones we've created was selected by choosing the model with the lowest RMSE value.  For this data subset, the best model is ", model,".")
+paste0("The best predictor model of the ones we've created was selected by choosing the model with the lowest RMSE value.  For this type of article, the best model is ", model,".")
 ```
 
 
