@@ -39,7 +39,7 @@ data <- data %>%
                           if_else(data_channel_is_tech == 1, "tech",
                           if_else(data_channel_is_world == 1, "world", "socmed"))))))
 
-data<-data%>%filter(channel==params$channel)
+data<-data%>%filter(channel=="bus")
 
 ```
 
