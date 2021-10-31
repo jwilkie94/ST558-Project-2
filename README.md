@@ -15,7 +15,23 @@ We created a repo for project 2. In this repo,  two group members can pull the r
 
 The code to be automated creating html documents are as below:
 
+articleID<-unique(data$channel)
+output_file<-paste0(articleID,".md")
+params=lapply(articleID,FUN=function(x){ list(channel=x)})
+reports<-tibble(output_file,params)
+library(rmarkdown)
+apply(reports,MARGIN=1, FUN=function(x){render(input="ST558 Project 2.Rmd",output_format="github_document", output_file=x[[1]], params=x[[2]])})
+
+
+
 # Links
 The links for every analysis are as below:
-The analysis for [Business articles is available here] (BusinessAnalysis.html).
+The analysis for [Business articles is available here](bus.html).
+The analysis for [Entertainment articles is available here](entertainment.html)
+The analysis for [Tech articles is available here](tech.html).
+The analysis for [World articles is available here](world.html)
+The analysis for [Socmed articles is available here](socmed.html)
+
+
+
 
