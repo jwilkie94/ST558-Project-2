@@ -25,13 +25,14 @@ In this project, we summarized and plot some parameters (predictors) against sha
 
 # Reading in Data Set 
 
-To begin, we read in the data set, then created a subset of the data to look at only the news article type that we are interested in.  The "URL" variable was removed because it was not useful to creating a model.  
+To begin, we read in the data set, then created a subset of the data to look at only the news article type that we are interested in.  The "URL" variable was removed because it was not useful to creating a model. A variable named "channel" was added to allow us to automate R markdown documents based on article type.   
 
 ```{r data_set, message=FALSE}
 online_news_popularity<-read_csv("OnlineNewsPopularity.csv")
 
 #filter for data to select the chanel of interest
 data<-online_news_popularity%>%subset(select=-url)
+
 ```
 
 
@@ -54,7 +55,7 @@ shares_avg
 shares_sd
 ```
 
-Another thing we are interested in is which day of the week has the most shares for this type of article and how many shares occur in total for each day of the week. The averages will give us the expected number of shares for each day, and the summation will give us a total count of the number of shares that have occured overall.  
+Another thing that could be interesting is which day of the week has the most shares for this type of article and how many shares occur in total for each day of the week. The averages will give us the expected number of shares for each day, and the summation will give us a total count of the number of shares that have occured overall.  
 
 
 ```{r weekday}
@@ -142,7 +143,7 @@ correlation<-cor(data$global_sentiment_polarity, data$shares)
 ggplot(data, aes(x=global_sentiment_polarity, y=shares))+geom_point(color="pink")+labs(x="Global Sentiment Polarity", y="Shares" ,title="Global Polarity vs. Shares")+geom_text(x=0.5, y=6e+05, size=4 ,label=paste0("Correlation=",round(correlation,2)))
 ```
 
-Next we can look at how keywords can affect the number of shares for an article.  The scatter plot below shows the kw_avg_avg plotted against shares.  The correlations that are included on this plot and can be interpreted in the same way as stated above.  
+We can also look at how keywords can affect the number of shares for an article.  The scatter plot below shows the kw_avg_avg plotted against shares.  The correlations that are included on this plot and can be interpreted in the same way as stated above.  
 
 ```{r}
 correlation<-cor(data$shares, data$kw_avg_avg)
@@ -155,13 +156,13 @@ We think the global rate positive words and negative words would have some impac
 ```{r global positive words}
 correlation_global_pos<-cor(data$global_rate_positive_words, data$shares)
 correlation_global_pos
-ggplot(data, aes(x=global_rate_positive_words, y=shares))+geom_point(color="green")+labs(x="global_rate_positive_words", y="Shares" ,title="global_rate_positive_words vs. Shares")+geom_text(x=0.15, y=7e+05, size=8,label = paste0("Correlation =", round(correlation_global_pos,2)))
+ggplot(data, aes(x=global_rate_positive_words, y=shares))+geom_point(color="green")+labs(x="global_rate_positive_words", y="Shares" ,title="global_rate_positive_words vs. Shares")+geom_text(x=0.10, y=6e+05, size=4,label = paste0("Correlation =", round(correlation_global_pos,2)))
 ```
 
 ```{r global negative words}
 correlation_global_neg<-cor(data$global_rate_negative_words, data$shares)
 correlation_global_neg
-ggplot(data, aes(x=global_rate_negative_words, y=shares))+geom_point(color="blue")+labs(x="global_rate_negative_words", y="Shares" ,title="global_rate_negative_words vs. Shares")+geom_text(x=0.2, y=10e+05, size=8, label = paste0("Correlation = " , round(correlation_global_neg,2)))
+ggplot(data, aes(x=global_rate_negative_words, y=shares))+geom_point(color="blue")+labs(x="global_rate_negative_words", y="Shares" ,title="global_rate_negative_words vs. Shares")+geom_text(x=0.06, y=6e+05, size=4, label = paste0("Correlation = " , round(correlation_global_neg,2)))
 ```  
 
 
@@ -171,11 +172,11 @@ Also, we inspect the impact of rate positive words and negative words on shares.
 ```{r rate postive words}
 correlation_rate_pos<-cor(data$rate_positive_words, data$shares)
 correlation_rate_pos
-ggplot(data, aes(x=rate_positive_words, y=shares))+geom_point(color="yellow")+labs(x="rate_positive_words", y="Shares" ,title="rate_positive_words vs. Shares")+geom_text(x=0.22, y=7e+05, size=8,label = paste0("Correlation =", round(correlation_rate_pos,2)))
+ggplot(data, aes(x=rate_positive_words, y=shares))+geom_point(color="yellow")+labs(x="rate_positive_words", y="Shares" ,title="rate_positive_words vs. Shares")+geom_text(x=0.22, y=7e+05, size=4,label = paste0("Correlation =", round(correlation_rate_pos,2)))
 
 correlation_rate_neg<-cor(data$rate_negative_words, data$shares)
 correlation_rate_neg
-ggplot(data, aes(x=rate_negative_words, y=shares))+geom_point(color="orange")+labs(x="rate_negative_words", y="Shares" ,title="rate_negative_words vs. Shares")+geom_text(x=0.22, y=7e+05, size=8,label = paste0("Correlation =", round(correlation_rate_neg,2)))
+ggplot(data, aes(x=rate_negative_words, y=shares))+geom_point(color="orange")+labs(x="rate_negative_words", y="Shares" ,title="rate_negative_words vs. Shares")+geom_text(x=0.22, y=7e+05, size=4,label = paste0("Correlation =", round(correlation_rate_neg,2)))
 
 ```  
 
@@ -186,11 +187,11 @@ We are interested in influence of number of images and videos on shares. Based o
 ```{r images and vedios}
 correlation_imgs<-cor(data$num_imgs, data$shares)
 correlation_imgs
-ggplot(data, aes(x=num_imgs, y=shares))+geom_point(color="red")+labs(x="num_imgs", y="Shares" ,title="num_imgs vs. Shares")+geom_text(x=0.22, y=7e+05, size=2,label = paste0("Correlation =", round(correlation_imgs,2)))
+ggplot(data, aes(x=num_imgs, y=shares))+geom_point(color="red")+labs(x="num_imgs", y="Shares" ,title="num_imgs vs. Shares")+geom_text(x=40, y=7e+05, size=4,label = paste0("Correlation =", round(correlation_imgs,2)))
 
 correlation_videos<-cor(data$num_videos, data$shares)
 correlation_videos
-ggplot(data, aes(x=num_videos, y=shares))+geom_point(color="purple")+labs(x="num_videos", y="Shares" ,title="num_videos vs. Shares")+geom_text(x=0.22, y=7e+05, size=2,label = paste0("Correlation =", round(correlation_videos,2)))
+ggplot(data, aes(x=num_videos, y=shares))+geom_point(color="purple")+labs(x="num_videos", y="Shares" ,title="num_videos vs. Shares")+geom_text(x=60, y=7e+05, size=4,label = paste0("Correlation =", round(correlation_videos,2)))
 ```  
 
 
