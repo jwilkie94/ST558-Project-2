@@ -22,7 +22,7 @@ reports<-tibble(output_file,params)
 library(rmarkdown)
 apply(reports,MARGIN=1, FUN=function(x){render(input="ST558 Project 2.Rmd",output_format="github_document", output_file=x[[1]], params=x[[2]])})
 
-
+Unfortunately we were unable to get the automation to work with the filter statement.  The entertainment articles are below, but the other htmls would not generate.  
 
 # Links
 The links for every analysis are as below:  
