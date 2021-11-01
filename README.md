@@ -16,10 +16,15 @@ We created a repo for project 2. In this repo,  two group members can pull the r
 The code to be automated creating html documents are as below:
 
 articleID<-unique(data$channel)
+
 output_file<-paste0(articleID,".md")
+
 params=lapply(articleID,FUN=function(x){ list(channel=x)})
+
 reports<-tibble(output_file,params)
+
 library(rmarkdown)
+
 apply(reports,MARGIN=1, FUN=function(x){render(input="ST558 Project 2.Rmd",output_format="github_document", output_file=x[[1]], params=x[[2]])})
 
 Unfortunately we were unable to get the automation to work with the filter statement.  The entertainment articles are below, but the other htmls would not generate.  
