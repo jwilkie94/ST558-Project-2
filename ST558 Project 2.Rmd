@@ -41,7 +41,6 @@ data <- data %>%
 ```
 
 ```{r filter}
-topics<-params$topics
 
 data<-filter(data,channel==params$channel)
 ```
