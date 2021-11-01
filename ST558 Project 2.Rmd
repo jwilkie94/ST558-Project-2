@@ -42,7 +42,7 @@ data <- data %>%
 
 ```{r filter}
 
-data<-filter(data,channel==params$channel)
+data<-filter(data,channel=="entertainment")
 ```
 # Summarizations
 
